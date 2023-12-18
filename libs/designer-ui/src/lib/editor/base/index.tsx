@@ -16,6 +16,7 @@ import InsertTokenNode from './plugins/InsertTokenNode';
 import OpenTokenPicker from './plugins/OpenTokenPicker';
 import { PastePlugin } from './plugins/Paste';
 import { ReadOnly } from './plugins/ReadOnly';
+import SerializeEditorPlugin from './plugins/SerializeEditorPlugin';
 import SingleValueSegment from './plugins/SingleValueSegment';
 import { TokenTypeAheadPlugin } from './plugins/TokenTypeahead';
 import { TreeView } from './plugins/TreeView';
@@ -216,6 +217,7 @@ export const BaseEditor = ({
           />
         ) : null}
         <FocusChangePlugin onFocus={handleFocus} onBlur={handleBlur} onClick={handleClick} />
+        <SerializeEditorPlugin serializeEditor={handleBlur} />
         <ReadOnly readonly={readonly} />
         {tabbable ? null : <IgnoreTab />}
         {htmlEditor === 'rich-html' ? null : <ArrowNavigation />}

@@ -213,6 +213,9 @@ const DefaultNode = ({ targetPosition = Position.Top, sourcePosition = Position.
   const label = useNodeDisplayName(id);
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const handleDeleteClick = () => setShowDeleteModal(true);
+  const handleDelete = () => dispatch(deleteOperation({ nodeId: id, isTrigger: !!isTrigger }));
+
   const [showCopyCallout, setShowCopyCallout] = useState(false);
 
   useOnViewportChange({
@@ -223,7 +226,6 @@ const DefaultNode = ({ targetPosition = Position.Top, sourcePosition = Position.
     }, [showCopyCallout]),
   });
 
-  const handleDeleteClick = () => setShowDeleteModal(true);
   const handleCopyClick = () => {
     setShowCopyCallout(true);
     dispatch(copyOperation({ nodeId: id }));
@@ -231,7 +233,6 @@ const DefaultNode = ({ targetPosition = Position.Top, sourcePosition = Position.
       setShowCopyCallout(false);
     }, 3000);
   };
-  const handleDelete = () => dispatch(deleteOperation({ nodeId: id, isTrigger: !!isTrigger }));
 
   const getMenuItems = (): MenuItemOption[] => {
     const deleteDescription = intl.formatMessage({

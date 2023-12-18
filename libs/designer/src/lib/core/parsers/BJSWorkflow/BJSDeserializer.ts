@@ -124,7 +124,7 @@ const isSwitchAction = (action: LogicAppsV2.ActionDefinition): action is LogicAp
 
 const isUntilAction = (action: LogicAppsV2.ActionDefinition) => action?.type?.toLowerCase() === 'until';
 
-const buildGraphFromActions = (
+export const buildGraphFromActions = (
   actions: Record<string, LogicAppsV2.ActionDefinition>,
   graphId: string,
   parentNodeId: string | undefined,

@@ -1,5 +1,6 @@
 import constants from '../../common/constants';
 import { getMonitoringError } from '../../common/utilities/error';
+import { copyScopeOperation } from '../../core/actions/bjsworkflow/copypaste';
 import { deleteGraphNode } from '../../core/actions/bjsworkflow/delete';
 import { moveOperation } from '../../core/actions/bjsworkflow/move';
 import type { WorkflowNode } from '../../core/parsers/models/workflowNode';
@@ -44,7 +45,7 @@ import { useDrag } from 'react-dnd';
 import { useIntl } from 'react-intl';
 import { useQuery } from 'react-query';
 import { useDispatch } from 'react-redux';
-import { Handle, Position } from 'reactflow';
+import { Handle, Position, useOnViewportChange } from 'reactflow';
 import type { NodeProps } from 'reactflow';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -166,6 +167,22 @@ const ScopeCardNode = ({ data, targetPosition = Position.Top, sourcePosition = P
   const handleDeleteClick = () => setShowDeleteModal(true);
   const handleDelete = () => dispatch(deleteGraphNode({ graphId: scopeId ?? '', graphNode }));
 
+  const [showCopyCallout, setShowCopyCallout] = useState(false);
+  useOnViewportChange({
+    onStart: useCallback(() => {
+      if (showCopyCallout) {
+        setShowCopyCallout(false);
+      }
+    }, [showCopyCallout]),
+  });
+  const handleCopyClick = () => {
+    setShowCopyCallout(true);
+    dispatch(copyScopeOperation({ nodeId: id }));
+    setTimeout(() => {
+      setShowCopyCallout(false);
+    }, 3000);
+  };
+
   const opQuery = useOperationQuery(scopeId);
 
   const isLoading = useMemo(
@@ -243,22 +260,46 @@ const ScopeCardNode = ({ data, targetPosition = Position.Top, sourcePosition = P
   const isFooter = id.endsWith('#footer');
   const showEmptyGraphComponents = isLeaf && !graphCollapsed && !isFooter;
 
-  const getDeleteMenuItem = () => {
+  const getMenuItems = (): MenuItemOption[] => {
     const deleteDescription = intl.formatMessage({
       defaultMessage: 'Delete',
       description: 'Delete text',
     });
-    const canDelete = true;
+    const disableTriggerDeleteText = intl.formatMessage({
+      defaultMessage: 'Triggers cannot be deleted.',
+      description: 'Text to explain that triggers cannot be deleted',
+    });
 
-    return {
-      key: deleteDescription,
-      disabled: readOnly || !canDelete,
-      disabledReason: '',
-      iconName: 'Delete',
-      title: deleteDescription,
-      type: MenuItemType.Advanced,
-      onClick: handleDeleteClick,
-    };
+    const copySubgraph = intl.formatMessage({
+      defaultMessage: 'Copy Subgraph (preview)',
+      description: 'Copy Subgraph text',
+    });
+
+    const copyDisabledText = intl.formatMessage({
+      defaultMessage: 'This Action/Trigger cannot be copied.',
+      description: 'Text to explain this action/trigger cannot be copied',
+    });
+
+    return [
+      {
+        key: deleteDescription,
+        disabled: readOnly,
+        disabledReason: disableTriggerDeleteText,
+        iconName: 'Delete',
+        title: deleteDescription,
+        type: MenuItemType.Advanced,
+        onClick: handleDeleteClick,
+      },
+      {
+        key: copySubgraph,
+        disabled: readOnly,
+        disabledReason: copyDisabledText,
+        iconName: 'Copy',
+        title: copySubgraph,
+        type: MenuItemType.Advanced,
+        onClick: handleCopyClick,
+      },
+    ];
   };
 
   const getResubmitMenuItem = () => {
@@ -285,7 +326,7 @@ const ScopeCardNode = ({ data, targetPosition = Position.Top, sourcePosition = P
     };
   };
 
-  const contextMenuOptions: MenuItemOption[] = [getDeleteMenuItem()];
+  const contextMenuOptions: MenuItemOption[] = getMenuItems();
   if (runData?.canResubmit) {
     contextMenuOptions.push(getResubmitMenuItem());
   }
@@ -339,8 +380,6 @@ const ScopeCardNode = ({ data, targetPosition = Position.Top, sourcePosition = P
         ) : null}
         <DeleteNodeModal
           nodeId={id}
-          // nodeIcon={iconUriResult.result}
-          // brandColor={brandColor}
           nodeType={WORKFLOW_NODE_TYPES.GRAPH_NODE}
           isOpen={showDeleteModal}
           onDismiss={() => setShowDeleteModal(false)}

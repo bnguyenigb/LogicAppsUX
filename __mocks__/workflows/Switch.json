@@ -55,7 +55,7 @@
     "triggers": {
       "Http": {
         "inputs": {
-          "body": "d",
+          "body": "EU-231K-00LI-RSVR-01.PV; 2023/9/22 2:0:4; 0",
           "headers": {
             "d": "d"
           },
