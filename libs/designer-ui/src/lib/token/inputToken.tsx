@@ -3,7 +3,6 @@ import { TokenType } from '../editor';
 import { CLOSE_TOKENPICKER } from '../editor/base/plugins/CloseTokenPicker';
 import { DELETE_TOKEN_NODE } from '../editor/base/plugins/DeleteTokenNode';
 import { OPEN_TOKEN_PICKER } from '../editor/base/plugins/OpenTokenPicker';
-import { SERIALIZE_EDITOR_COMMAND } from '../editor/base/plugins/SerializeEditorPlugin';
 import iconSvg from './icon/icon.svg';
 import { Icon, css } from '@fluentui/react';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
@@ -78,9 +77,7 @@ export const InputToken: React.FC<InputTokenProps> = ({ value, brandColor, icon,
   const handleTokenDeleteClicked = async () => {
     if (nodeKey) {
       editor.dispatchCommand(DELETE_TOKEN_NODE, nodeKey);
-      setTimeout(() => {
-        editor.dispatchCommand(SERIALIZE_EDITOR_COMMAND, undefined);
-      }, 200);
+      editor.focus();
     }
   };
 
@@ -95,7 +92,10 @@ export const InputToken: React.FC<InputTokenProps> = ({ value, brandColor, icon,
         aria-label={tokenDelete}
         className="msla-button msla-token-delete"
         data-automation-id={`msla-token-delete-${title}`}
-        onClick={handleTokenDeleteClicked}
+        onClick={(e) => {
+          e.stopPropagation();
+          handleTokenDeleteClicked();
+        }}
         onMouseDown={(e) => {
           e.preventDefault();
         }}

@@ -132,7 +132,7 @@ export const BaseEditor = ({
     autoLink,
     clearEditor,
     history = true,
-    tokens,
+    tokens = true,
     treeView,
     htmlEditor = false,
     tabbable,
@@ -180,15 +180,7 @@ export const BaseEditor = ({
         data-automation-id={dataAutomationId}
         title={placeholder}
       >
-        {htmlEditor ? (
-          <Toolbar
-            isRawText={htmlEditor === 'raw-html'}
-            loadParameterValueFromString={loadParameterValueFromString}
-            readonly={readonly}
-            segmentMapping={tokenMapping}
-            setIsRawText={setIsValuePlaintext}
-          />
-        ) : null}
+        {htmlEditor ? <Toolbar isRawText={htmlEditor === 'raw-html'} readonly={readonly} setIsRawText={setIsValuePlaintext} /> : null}
         <TextPlugin
           contentEditable={
             <ContentEditable className={css('editor-input', readonly && 'readonly')} ariaLabelledBy={labelId} ariaDescribedBy={id} />
@@ -209,22 +201,24 @@ export const BaseEditor = ({
         {autoLink ? <AutoLink /> : null}
         {clearEditor ? <ClearEditor showButton={false} /> : null}
         {singleValueSegment ? <SingleValueSegment /> : null}
-        {tokens ? (
-          <TokenTypeAheadPlugin
-            openTokenPicker={openTokenPicker}
-            isEditorFocused={isEditorFocused}
-            hideTokenPickerOptions={tokenPickerButtonProps?.hideButtonOptions}
-          />
-        ) : null}
         <FocusChangePlugin onFocus={handleFocus} onBlur={handleBlur} onClick={handleClick} />
         <SerializeEditorPlugin serializeEditor={handleBlur} />
         <ReadOnly readonly={readonly} />
         {tabbable ? null : <IgnoreTab />}
         {htmlEditor === 'rich-html' ? null : <ArrowNavigation />}
-        {tokens ? <InsertTokenNode /> : null}
-        {tokens ? <DeleteTokenNode /> : null}
-        {tokens ? <OpenTokenPicker openTokenPicker={openTokenPicker} /> : null}
-        {tokens ? <CloseTokenPicker closeTokenPicker={() => setIsTokenPickerOpened(false)} /> : null}
+        {tokens ? (
+          <>
+            <InsertTokenNode />
+            <DeleteTokenNode />
+            <OpenTokenPicker openTokenPicker={openTokenPicker} />
+            <CloseTokenPicker closeTokenPicker={() => setIsTokenPickerOpened(false)} />
+            <TokenTypeAheadPlugin
+              openTokenPicker={openTokenPicker}
+              isEditorFocused={isEditorFocused}
+              hideTokenPickerOptions={tokenPickerButtonProps?.hideButtonOptions}
+            />
+          </>
+        ) : null}
         {tokens && !htmlEditor ? (
           <PastePlugin segmentMapping={tokenMapping} loadParameterValueFromString={loadParameterValueFromString} />
         ) : null}

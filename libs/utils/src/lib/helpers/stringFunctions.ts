@@ -14,3 +14,5 @@ export const capitalizeFirstLetter = (s: string) => s.charAt(0).toUpperCase() + 
 export const normalizeAutomationId = (s: string) => s.replace(/\W/g, '-');
 
 export const createIdCopy = (id: string) => `${id}-copy`;
+
+export const wrapTokenValue = (s: string) => `@{${s}}`;
