@@ -31,7 +31,7 @@ export const ScopeCard: React.FC<ScopeCardProps> = ({
   handleCollapse,
   selected,
   contextMenuOptions = [],
-  runData = {},
+  runData = { status: undefined, duration: undefined, startTime: undefined, endTime: undefined },
 }) => {
   const contextMenu = useCardContextMenu();
 

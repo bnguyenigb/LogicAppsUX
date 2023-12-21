@@ -107,6 +107,7 @@ export interface ICustomEditorOptions {
 }
 
 export interface IEditorService {
+  areCustomEditorsEnabled: boolean;
   getEditor(parameter: IEditorParameterInfo): undefined | ICustomEditorOptions;
 }
 

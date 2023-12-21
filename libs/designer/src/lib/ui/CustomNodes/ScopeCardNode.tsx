@@ -34,10 +34,11 @@ import type { AppDispatch } from '../../core/store';
 import { LoopsPager } from '../common/LoopsPager/LoopsPager';
 import { getRepetitionName } from '../common/LoopsPager/helper';
 import { DropZone } from '../connections/dropzone';
-import { MessageBarType } from '@fluentui/react';
+import type { ICalloutContentStyles } from '@fluentui/react';
+import { Callout, DirectionalHint, MessageBarType } from '@fluentui/react';
 import { RunService, WorkflowService } from '@microsoft/designer-client-services-logic-apps';
 import type { MenuItemOption } from '@microsoft/designer-ui';
-import { DeleteNodeModal, MenuItemType, ScopeCard } from '@microsoft/designer-ui';
+import { DeleteNodeModal, MenuItemType, ScopeCard, useId } from '@microsoft/designer-ui';
 import type { LogicAppsV2 } from '@microsoft/utils-logic-apps';
 import { removeIdTag, WORKFLOW_NODE_TYPES } from '@microsoft/utils-logic-apps';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
@@ -48,6 +49,10 @@ import { useDispatch } from 'react-redux';
 import { Handle, Position, useOnViewportChange } from 'reactflow';
 import type { NodeProps } from 'reactflow';
 
+const copyCalloutStyles: Partial<ICalloutContentStyles> = {
+  root: { padding: 10 },
+};
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const ScopeCardNode = ({ data, targetPosition = Position.Top, sourcePosition = Position.Bottom, id }: NodeProps) => {
   const scopeId = removeIdTag(id);
@@ -56,6 +61,8 @@ const ScopeCardNode = ({ data, targetPosition = Position.Top, sourcePosition = P
   const operationsInfo = useAllOperations();
 
   const intl = useIntl();
+  const tooltipId = useId(removeIdTag(id));
+
   const dispatch = useDispatch<AppDispatch>();
   const readOnly = useReadOnly();
   const isMonitoringView = useMonitoringView();
@@ -168,6 +175,7 @@ const ScopeCardNode = ({ data, targetPosition = Position.Top, sourcePosition = P
   const handleDelete = () => dispatch(deleteGraphNode({ graphId: scopeId ?? '', graphNode }));
 
   const [showCopyCallout, setShowCopyCallout] = useState(false);
+
   useOnViewportChange({
     onStart: useCallback(() => {
       if (showCopyCallout) {
@@ -175,6 +183,7 @@ const ScopeCardNode = ({ data, targetPosition = Position.Top, sourcePosition = P
       }
     }, [showCopyCallout]),
   });
+
   const handleCopyClick = () => {
     setShowCopyCallout(true);
     dispatch(copyScopeOperation({ nodeId: id }));
@@ -337,10 +346,16 @@ const ScopeCardNode = ({ data, targetPosition = Position.Top, sourcePosition = P
     constants.NODE.TYPE.SCOPE,
     constants.NODE.TYPE.UNTIL,
   ];
+
+  const copiedText = intl.formatMessage({
+    defaultMessage: 'Copied!',
+    description: 'Copied text',
+  });
+
   if (implementedGraphTypes.includes(normalizedType)) {
     return (
       <>
-        <div className="msla-scope-card nopan">
+        <div className="msla-scope-card nopan" id={tooltipId}>
           <Handle className="node-handle top" type="target" position={targetPosition} isConnectable={false} />
           <ScopeCard
             brandColor={brandColor}
@@ -363,6 +378,11 @@ const ScopeCardNode = ({ data, targetPosition = Position.Top, sourcePosition = P
             contextMenuOptions={contextMenuOptions}
             runData={runData}
           />
+          {showCopyCallout ? (
+            <Callout target={`#${tooltipId}`} styles={copyCalloutStyles} directionalHint={DirectionalHint.bottomRightEdge}>
+              {copiedText}
+            </Callout>
+          ) : null}
           {isMonitoringView && normalizedType === constants.NODE.TYPE.FOREACH ? (
             <LoopsPager metadata={metadata} scopeId={scopeId} collapsed={graphCollapsed} />
           ) : null}

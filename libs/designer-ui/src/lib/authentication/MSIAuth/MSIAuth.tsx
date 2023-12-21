@@ -7,6 +7,7 @@ import { AuthenticationProperty } from '../AuthenticationProperty';
 import { AUTHENTICATION_PROPERTIES, containsUserAssignedIdentities } from '../util';
 import { MSIAuthenticationDefault } from './MSIAuthDefault';
 import type { IDropdownOption } from '@fluentui/react';
+import { isTemplateExpression } from '@microsoft/parsers-logic-apps';
 import type { ManagedIdentity } from '@microsoft/utils-logic-apps';
 import { ResourceIdentityType, equals } from '@microsoft/utils-logic-apps';
 import type { Dispatch, SetStateAction } from 'react';
@@ -133,7 +134,8 @@ const getManagedIdentityData = (
     if (
       selectedManagedIdentityKey &&
       !isSystemAssignedIdentity(selectedManagedIdentityKey) &&
-      !userAssignedIdentities?.find((userIdentity) => userIdentity.key === selectedManagedIdentityKey)
+      !userAssignedIdentities?.find((userIdentity) => userIdentity.key === selectedManagedIdentityKey) &&
+      !isTemplateExpression(selectedManagedIdentityKey)
     ) {
       identityOptions.push({ key: selectedManagedIdentityKey, text: getIdentityDisplayName(selectedManagedIdentityKey) });
       errorMessage = invalidUserAssignedManagedIdentity;

@@ -72,7 +72,7 @@ const DefaultNode = ({ targetPosition = Position.Top, sourcePosition = Position.
   const readOnly = useReadOnly();
   const isMonitoringView = useMonitoringView();
   const intl = useIntl();
-  const tooltipId = useId();
+  const tooltipId = useId(id);
 
   const dispatch = useDispatch<AppDispatch>();
   const operationsInfo = useAllOperations();

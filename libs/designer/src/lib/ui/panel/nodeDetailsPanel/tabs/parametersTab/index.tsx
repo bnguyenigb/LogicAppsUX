@@ -457,12 +457,14 @@ export const getEditorAndOptions = (
   upstreamNodeIds: string[],
   variables: Record<string, VariableDeclaration[]>
 ): { editor?: string; editorOptions?: any } => {
-  const customEditor = EditorService()?.getEditor({
-    operationInfo,
-    parameter,
-  });
-  if (customEditor) {
-    return toCustomEditorAndOptions(customEditor);
+  if (EditorService()?.areCustomEditorsEnabled) {
+    const customEditor = EditorService()?.getEditor({
+      operationInfo,
+      parameter,
+    });
+    if (customEditor) {
+      return toCustomEditorAndOptions(customEditor);
+    }
   }
 
   const { editor, editorOptions } = parameter;
