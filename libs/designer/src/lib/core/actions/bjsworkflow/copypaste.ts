@@ -32,6 +32,12 @@ export const copyOperation = createAsyncThunk('copyOperation', async (payload: C
   });
 });
 
+export interface ScopeCopyInformation {
+  nodeData: NodeData;
+  operationInfo: NodeOperation;
+  connectionData?: ReferenceKey;
+}
+
 export const copyScopeOperation = createAsyncThunk('copyScopeOperation', async (payload: CopyOperationPayload, { getState }) => {
   batch(async () => {
     const { nodeId: idScopeNode } = payload;
@@ -51,14 +57,14 @@ export const copyScopeOperation = createAsyncThunk('copyScopeOperation', async (
       skipValidation: true,
       ignoreNonCriticalErrors: true,
     });
-    const nodeDataMapping: Map<string, NodeData> = new Map();
+    const nodeDataMapping: Map<string, ScopeCopyInformation> = new Map();
 
     flattenScopeNode(idReplacements[scopeNodeId] ?? scopeNodeId, state, serializedOperation, nodeDataMapping, reversedIdReplacements);
     console.log(nodeDataMapping);
 
     window.localStorage.setItem(
       'msla-clipboard',
-      JSON.stringify({ nodeId: newNodeId, operationInfo: nodeOperationInfo, nodeData, serializedOperation, isScopeNode: true })
+      JSON.stringify({ nodeId: newNodeId, operationInfo: nodeOperationInfo, nodeData, nodeDataMapping, isScopeNode: true })
     );
   });
 });
@@ -161,12 +167,19 @@ const flattenScopeNode = (
   nodeId: string,
   state: RootState,
   serializedOperation: LogicAppsV2.ActionDefinition | null,
-  dataMapping: Map<string, NodeData>,
+  dataMapping: Map<string, ScopeCopyInformation>,
   idReplacements: Record<string, string>
 ) => {
   if (!serializedOperation) return;
   const originalNodeId = idReplacements[nodeId] ?? nodeId;
-  dataMapping.set(createIdCopy(nodeId), getNodeData(state, originalNodeId, createIdCopy(nodeId)));
+  const nodeOperationInfo = state.operations.operationInfo[originalNodeId];
+  const connectionInfo = state.connections.connectionsMapping[originalNodeId];
+  dataMapping.set(createIdCopy(nodeId), {
+    nodeData: getNodeData(state, originalNodeId, createIdCopy(nodeId)),
+    operationInfo: nodeOperationInfo,
+    connectionData: connectionInfo,
+  });
+
   const { type } = serializedOperation;
   let actions: LogicAppsV2.Actions | undefined;
 
@@ -205,12 +218,19 @@ const flattenScopeCaseNode = (
   nodeId: string,
   state: RootState,
   serializedOperation: LogicAppsV2.SwitchCase | null,
-  dataMapping: Map<string, NodeData>,
+  dataMapping: Map<string, ScopeCopyInformation>,
   idReplacements: Record<string, string>
 ) => {
   if (!serializedOperation) return;
   const originalNodeId = idReplacements[nodeId] ?? nodeId;
-  dataMapping.set(createIdCopy(nodeId), getNodeData(state, originalNodeId, createIdCopy(nodeId)));
+  const nodeOperationInfo = state.operations.operationInfo[nodeId];
+  const connectionInfo = state.connections.connectionsMapping[nodeId];
+  dataMapping.set(createIdCopy(nodeId), {
+    nodeData: getNodeData(state, originalNodeId, createIdCopy(nodeId)),
+    operationInfo: nodeOperationInfo,
+    connectionData: connectionInfo,
+  });
+
   const { actions } = serializedOperation ?? {};
   if (actions) {
     iterateThroughActions(actions, state, dataMapping, idReplacements);
@@ -220,7 +240,7 @@ const flattenScopeCaseNode = (
 const iterateThroughActions = (
   actions: LogicAppsV2.Actions | undefined,
   state: RootState,
-  dataMapping: Map<string, NodeData>,
+  dataMapping: Map<string, ScopeCopyInformation>,
   idReplacements: Record<string, string>
 ) => {
   if (actions) {
