@@ -68,9 +68,8 @@ export const DropZone: React.FC<DropZoneProps> = ({ graphId, parentId, childId, 
           pasteScopeOperation({
             relationshipIds,
             nodeId: copiedNode.nodeId,
-            nodeData: copiedNode.nodeData,
-            serializedOperation: copiedNode.serializedOperation,
-            operationInfo: copiedNode.operationInfo,
+            // converts the stringified array of tuples back into a map
+            nodeDataMapping: new Map(JSON.parse(copiedNode.nodeDataMapping)),
           })
         );
       } else {
@@ -85,7 +84,7 @@ export const DropZone: React.FC<DropZoneProps> = ({ graphId, parentId, childId, 
         );
       }
     }
-  }, [graphId, childId, parentId, dispatch, copiedNode]);
+  }, [graphId, childId, parentId, copiedNode, dispatch]);
 
   const addParallelBranch = useCallback(() => {
     const newId = guid();

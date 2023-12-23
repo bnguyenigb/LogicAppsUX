@@ -49,22 +49,19 @@ export const copyScopeOperation = createAsyncThunk('copyScopeOperation', async (
 
     const scopeNodeId = removeIdTag(idScopeNode);
     const newNodeId = createIdCopy(scopeNodeId);
-    const nodeOperationInfo = state.operations.operationInfo[scopeNodeId];
-
-    const nodeData = getNodeData(state, scopeNodeId, newNodeId);
 
     const serializedOperation = await serializeOperation(state, scopeNodeId, {
       skipValidation: true,
       ignoreNonCriticalErrors: true,
     });
     const nodeDataMapping: Map<string, ScopeCopyInformation> = new Map();
-
     flattenScopeNode(idReplacements[scopeNodeId] ?? scopeNodeId, state, serializedOperation, nodeDataMapping, reversedIdReplacements);
-    console.log(nodeDataMapping);
-
+    // converts the map to a string in the form of an array of tuples to store in local storage
+    const stringifiedNodeDataMapping = JSON.stringify(Array.from(nodeDataMapping.entries()));
+    
     window.localStorage.setItem(
       'msla-clipboard',
-      JSON.stringify({ nodeId: newNodeId, operationInfo: nodeOperationInfo, nodeData, nodeDataMapping, isScopeNode: true })
+      JSON.stringify({ nodeId: newNodeId, nodeDataMapping: stringifiedNodeDataMapping, isScopeNode: true })
     );
   });
 });
@@ -112,16 +109,14 @@ export const pasteOperation = createAsyncThunk('pasteOperation', async (payload:
 interface PasteScopeOperationPayload {
   relationshipIds: RelationshipIds;
   nodeId: string;
-  nodeData: NodeData;
-  serializedOperation: LogicAppsV2.ActionDefinition | null;
-  operationInfo: NodeOperation;
+  nodeDataMapping: Map<string, ScopeCopyInformation>;
 }
 
 export const pasteScopeOperation = createAsyncThunk(
   'pasteScopeOperation',
   async (payload: PasteScopeOperationPayload, { dispatch, getState }) => {
-    const { nodeId: actionId, relationshipIds, operationInfo, serializedOperation, nodeData } = payload;
-    if (!actionId || !relationshipIds || !serializedOperation) throw new Error('Operation does not exist'); // Just an optional catch, should never happen
+    const { nodeId: actionId, relationshipIds, nodeDataMapping } = payload;
+    if (!actionId || !relationshipIds || !nodeDataMapping) throw new Error('Operation does not exist'); // Just an optional catch, should never happen
 
     let count = 1;
     let nodeId = actionId;
@@ -131,21 +126,22 @@ export const pasteScopeOperation = createAsyncThunk(
       count++;
     }
     // update workflow
-    dispatch(
-      pasteNode({
-        nodeId: nodeId,
-        relationshipIds: relationshipIds,
-        operation: operationInfo,
-      })
-    );
+    // dispatch(
+    //   pasteNode({
+    //     nodeId: nodeId,
+    //     relationshipIds: relationshipIds,
+    //     operation: operationInfo,
+    //   })
+    // );
 
-    dispatch(initializeOperationInfo({ id: nodeId, ...operationInfo }));
-    await initializeOperationDetails(nodeId, operationInfo, getState as () => RootState, dispatch);
+    console.log(nodeDataMapping);
+    // dispatch(initializeOperationInfo({ id: nodeId, ...operationInfo }));
+    // await initializeOperationDetails(nodeId, operationInfo, getState as () => RootState, dispatch);
 
-    // replace new nodeId if there exists a copy of the copied node
-    dispatch(initializeNodes([{ ...nodeData, id: nodeId }]));
+    // // replace new nodeId if there exists a copy of the copied node
+    // dispatch(initializeNodes([{ ...nodeData, id: nodeId }]));
 
-    dispatch(setFocusNode(nodeId));
+    // dispatch(setFocusNode(nodeId));
   }
 );
 
