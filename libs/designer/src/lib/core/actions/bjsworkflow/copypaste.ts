@@ -7,7 +7,7 @@ import { pasteNode } from '../../state/workflow/workflowSlice';
 import { initializeOperationDetails } from './add';
 import { serializeOperation } from './serializer';
 import type { LogicAppsV2 } from '@microsoft/utils-logic-apps';
-import { createIdCopy, removeIdTag } from '@microsoft/utils-logic-apps';
+import { createIdCopy, removeIdTag, reverseRecord } from '@microsoft/utils-logic-apps';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { batch } from 'react-redux';
 
@@ -37,19 +37,25 @@ export const copyScopeOperation = createAsyncThunk('copyScopeOperation', async (
     const { nodeId: idScopeNode } = payload;
     if (!idScopeNode) throw new Error('Node does not exist'); // Just an optional catch, should never happen
     const state = getState() as RootState;
-    const idReplacements = state.workflow.idReplacements;
-    const scopeNodeId = removeIdTag(idScopeNode);
-    const scopeNodeIdReplacement = idReplacements[scopeNodeId] ?? scopeNodeId;
 
+    const idReplacements = state.workflow.idReplacements;
+    const reversedIdReplacements = reverseRecord(idReplacements);
+
+    const scopeNodeId = removeIdTag(idScopeNode);
     const newNodeId = createIdCopy(scopeNodeId);
     const nodeOperationInfo = state.operations.operationInfo[scopeNodeId];
 
     const nodeData = getNodeData(state, scopeNodeId, newNodeId);
-    const serializedOperation = await serializeOperation(state, scopeNodeId, { skipValidation: true, ignoreNonCriticalErrors: true });
+
+    const serializedOperation = await serializeOperation(state, scopeNodeId, {
+      skipValidation: true,
+      ignoreNonCriticalErrors: true,
+    });
     const nodeDataMapping: Map<string, NodeData> = new Map();
-    console.log(scopeNodeIdReplacement);
-    flattenScopeNode(scopeNodeIdReplacement, state, serializedOperation, nodeDataMapping);
+
+    flattenScopeNode(idReplacements[scopeNodeId] ?? scopeNodeId, state, serializedOperation, nodeDataMapping, reversedIdReplacements);
     console.log(nodeDataMapping);
+
     window.localStorage.setItem(
       'msla-clipboard',
       JSON.stringify({ nodeId: newNodeId, operationInfo: nodeOperationInfo, nodeData, serializedOperation, isScopeNode: true })
@@ -155,10 +161,12 @@ const flattenScopeNode = (
   nodeId: string,
   state: RootState,
   serializedOperation: LogicAppsV2.ActionDefinition | null,
-  dataMapping: Map<string, NodeData>
+  dataMapping: Map<string, NodeData>,
+  idReplacements: Record<string, string>
 ) => {
   if (!serializedOperation) return;
-  dataMapping.set(nodeId, getNodeData(state, nodeId, createIdCopy(nodeId)));
+  const originalNodeId = idReplacements[nodeId] ?? nodeId;
+  dataMapping.set(createIdCopy(nodeId), getNodeData(state, originalNodeId, createIdCopy(nodeId)));
   const { type } = serializedOperation;
   let actions: LogicAppsV2.Actions | undefined;
 
@@ -168,24 +176,24 @@ const flattenScopeNode = (
         ...(serializedOperation as LogicAppsV2.IfAction).actions,
         ...(serializedOperation as LogicAppsV2.IfAction).else?.actions,
       };
-      iterateThroughActions(actions, state, dataMapping);
+      iterateThroughActions(actions, state, dataMapping, idReplacements);
       break;
     case 'Switch':
       // eslint-disable-next-line no-case-declarations
       const cases = (serializedOperation as LogicAppsV2.SwitchAction).cases ?? {};
       Object.entries(cases).forEach(([key, value]) => {
-        flattenScopeCaseNode(key, state, value, dataMapping);
+        flattenScopeCaseNode(key, state, value, dataMapping, idReplacements);
       });
       actions = {
         ...(serializedOperation as LogicAppsV2.SwitchAction).default?.actions,
       };
-      iterateThroughActions(actions, state, dataMapping);
+      iterateThroughActions(actions, state, dataMapping, idReplacements);
       break;
     case 'Until':
     case 'Foreach':
     case 'Scope':
       actions = (serializedOperation as LogicAppsV2.ScopeAction).actions;
-      iterateThroughActions(actions, state, dataMapping);
+      iterateThroughActions(actions, state, dataMapping, idReplacements);
       break;
     default:
       break;
@@ -197,20 +205,27 @@ const flattenScopeCaseNode = (
   nodeId: string,
   state: RootState,
   serializedOperation: LogicAppsV2.SwitchCase | null,
-  dataMapping: Map<string, NodeData>
+  dataMapping: Map<string, NodeData>,
+  idReplacements: Record<string, string>
 ) => {
   if (!serializedOperation) return;
-  dataMapping.set(nodeId, getNodeData(state, nodeId, createIdCopy(nodeId)));
+  const originalNodeId = idReplacements[nodeId] ?? nodeId;
+  dataMapping.set(createIdCopy(nodeId), getNodeData(state, originalNodeId, createIdCopy(nodeId)));
   const { actions } = serializedOperation ?? {};
   if (actions) {
-    iterateThroughActions(actions, state, dataMapping);
+    iterateThroughActions(actions, state, dataMapping, idReplacements);
   }
 };
 
-const iterateThroughActions = (actions: LogicAppsV2.Actions | undefined, state: RootState, dataMapping: Map<string, NodeData>) => {
+const iterateThroughActions = (
+  actions: LogicAppsV2.Actions | undefined,
+  state: RootState,
+  dataMapping: Map<string, NodeData>,
+  idReplacements: Record<string, string>
+) => {
   if (actions) {
     Object.entries(actions).forEach(([key, value]) => {
-      flattenScopeNode(key, state, value, dataMapping);
+      flattenScopeNode(key, state, value, dataMapping, idReplacements);
     });
   }
 };

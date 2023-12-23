@@ -1035,3 +1035,12 @@ export const filterRecord = <T>(data: Record<string, T>, filter: (_key: string, 
     .filter(([key, value]) => filter(key, value))
     .reduce((res: any, [key, value]: any) => ({ ...res, [key]: value }), {});
 };
+
+/**
+ * Returns a reverse of a one-to-one Record<string, string>
+ * @param {Record<string, string>} inputRecord - The Record to reverse
+ * @returns {Record<string, string>} - The Reversed Record
+ */
+export const reverseRecord = (inputRecord: Record<string, string>): Record<string, string> => {
+  return Object.fromEntries(Object.entries(inputRecord).map(([key, value]) => [value, key]));
+};
