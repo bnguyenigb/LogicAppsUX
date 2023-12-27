@@ -31,7 +31,7 @@
         },
         "runAfter": {}
       },
-      "Parse_JSON": {
+      "this-is-a-test": {
         "type": "ParseJson",
         "inputs": {
           "content": "@{triggerBody()?['string']}@{variables('ArrayVariable')}",
@@ -65,7 +65,7 @@
           "where": "@not(contains(length(split(item(), '|')?[0]),length(split(item(), '|')?[0])))"
         },
         "runAfter": {
-          "Parse_JSON": ["SUCCEEDED"]
+          "this-is-a-test": ["SUCCEEDED"]
         }
       },
       "HTTP": {

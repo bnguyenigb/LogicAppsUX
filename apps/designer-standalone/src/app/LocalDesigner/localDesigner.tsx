@@ -174,7 +174,6 @@ export const LocalDesigner = () => {
     showConnectionsPanel,
     hostOptions,
   };
-  console.log(areCustomEditorsEnabled);
 
   return (
     <DesignerProvider locale={language} options={{ ...designerProviderProps }}>

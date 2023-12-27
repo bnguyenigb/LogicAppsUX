@@ -1,5 +1,6 @@
 import constants from '../../../common/constants';
 import { updateNodeConnection } from '../../actions/bjsworkflow/connections';
+import type { ScopeCopyInformation } from '../../actions/bjsworkflow/copypaste';
 import { initializeGraphState } from '../../parsers/ParseReduxAction';
 import type { AddNodePayload } from '../../parsers/addNodeToWorkflow';
 import { addSwitchCaseToWorkflow, addNodeToWorkflow } from '../../parsers/addNodeToWorkflow';
@@ -30,6 +31,8 @@ import { equals, RUN_AFTER_STATUS, WORKFLOW_EDGE_TYPES, WORKFLOW_NODE_TYPES } fr
 import { createSlice, isAnyOf } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import type { NodeChange, NodeDimensionChange } from 'reactflow';
+
+// import { createSubgraphFromPaste } from '../../parsers/pasteScopeNodeToWorkflow';
 
 export interface AddImplicitForeachPayload {
   nodeId: string;
@@ -145,6 +148,20 @@ export const workflowSlice = createSlice({
         state.nodesMetadata,
         state
       );
+    },
+    pasteScopeNode: (
+      state: WorkflowState,
+      action: PayloadAction<{
+        nodeId: string;
+        relationshipIds: RelationshipIds;
+        nodeMapping: Map<string, ScopeCopyInformation>;
+        workflowGraph: WorkflowNode | undefined;
+      }>
+    ) => {
+      const graph = getWorkflowNodeFromGraphState(state, action.payload.relationshipIds.graphId);
+      if (!graph) throw new Error('graph not set');
+      console.log(action.payload.workflowGraph);
+      // createSubgraphFromPaste(action.payload, state);
     },
     moveNode: (state: WorkflowState, action: PayloadAction<MoveNodePayload>) => {
       if (!state.graph) {
@@ -450,6 +467,7 @@ export const {
   addNode,
   addImplicitForeachNode,
   pasteNode,
+  pasteScopeNode,
   moveNode,
   deleteNode,
   deleteSwitchCase,
