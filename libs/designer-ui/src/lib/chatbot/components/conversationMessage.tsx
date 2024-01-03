@@ -63,7 +63,7 @@ const AssistantReply = ({ item }: { item: AssistantReplyItem }) => {
         textRef={textRef}
       >
         <div ref={textRef}>
-          <Markdown>{text}</Markdown>
+          <Markdown linkTarget="_blank">{text}</Markdown>
         </div>
       </ChatBubble>
       {feedbackMessage}
