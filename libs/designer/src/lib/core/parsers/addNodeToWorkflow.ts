@@ -5,7 +5,7 @@ import type { NodesMetadata, WorkflowState } from '../state/workflow/workflowInt
 import { createWorkflowNode, createWorkflowEdge } from '../utils/graph';
 import type { WorkflowEdge, WorkflowNode } from './models/workflowNode';
 import { reassignEdgeSources, reassignEdgeTargets, addNewEdge, applyIsRootNode, removeEdge } from './restructuringHelpers';
-import type { DiscoveryOperation, DiscoveryResultTypes, SubgraphType } from '@microsoft/utils-logic-apps';
+import type { DiscoveryOperation, DiscoveryResultTypes, LogicAppsV2, SubgraphType } from '@microsoft/utils-logic-apps';
 import { removeIdTag, SUBGRAPH_TYPES, WORKFLOW_EDGE_TYPES, isScopeOperation, WORKFLOW_NODE_TYPES } from '@microsoft/utils-logic-apps';
 
 export interface AddNodePayload {
@@ -14,6 +14,26 @@ export interface AddNodePayload {
   relationshipIds: RelationshipIds;
   isParallelBranch?: boolean;
   isTrigger?: boolean;
+}
+
+// takes a workflowNode and inserts it at a specificed location in the graph
+export const addWorkflowNodeToWorkflow = (
+  relationshipIds: RelationshipIds,
+  workflowGraph: WorkflowNode,
+  nodeId: string,
+  workflowNode: WorkflowNode,
+  nodesMetadata: NodesMetadata,
+  operations: Record<string, LogicAppsV2.OperationDefinition>,
+  state: WorkflowState
+) => {
+  if (!workflowNode) return;
+  const { parentId, childId } = relationshipIds;
+  workflowGraph.children = [...(workflowGraph?.children ?? []), workflowNode];
+  edgeCreation(state, workflowGraph, nodeId, childId, parentId);
+  console.log(nodesMetadata);
+  state.nodesMetadata = {...state.nodesMetadata, ...nodesMetadata}
+  // applyIsRootNode(state, workflowGraph, nodesMetadata);
+
 }
 
 export const addNodeToWorkflow = (
@@ -39,7 +59,7 @@ export const addNodeToWorkflow = (
   const isTrigger = !!operation.properties?.trigger;
   const isRoot = isTrigger || (parentId ? removeIdTag(parentId) === graphId : false);
   const parentNodeId = graphId !== 'root' ? graphId : undefined;
-  nodesMetadata[newNodeId] = { graphId, parentNodeId, isRoot };
+  // nodesMetadata[newNodeId] = { graphId, parentNodeId, isRoot };
 
   state.operations[newNodeId] = { ...state.operations[newNodeId], type: operation.type };
   state.newlyAddedOperations[newNodeId] = newNodeId;
@@ -51,12 +71,35 @@ export const addNodeToWorkflow = (
   state.operations[newNodeId] = { ...state.operations[newNodeId], type: operation.type };
   state.newlyAddedOperations[newNodeId] = newNodeId;
 
+  edgeCreation(state, workflowGraph, newNodeId, childId, parentId, isParallelBranch, shouldAddRunAfters);
+
+  applyIsRootNode(state, workflowGraph, nodesMetadata);
+
+  // Increase action count of graph
+  if (nodesMetadata[workflowGraph.id]) {
+    nodesMetadata[workflowGraph.id].actionCount = nodesMetadata[graphId].actionCount ?? 0 + 1;
+  }
+
+  // If the added node is a do-until, we need to set the subgraphtype for the header
+  if (operation.type.toLowerCase() === 'until') nodesMetadata[newNodeId].subgraphType = SUBGRAPH_TYPES.UNTIL_DO;
+};
+
+const edgeCreation = (
+  state: WorkflowState,
+  workflowGraph: WorkflowNode,
+  newNodeId: string,
+  childId?: string,
+  parentId?: string,
+  isParallelBranch?: boolean,
+  shouldAddRunAfters?: boolean
+) => {
   // Parallel Branch creation, just add the singular node
   if (isParallelBranch && parentId) {
     addNewEdge(state, parentId, newNodeId, workflowGraph, shouldAddRunAfters);
   }
   // 1 parent, 1 child
   else if (parentId && childId) {
+    console.log('hi')
     const childRunAfter = (state.operations?.[childId] as any)?.runAfter;
     addNewEdge(state, parentId, newNodeId, workflowGraph, shouldAddRunAfters);
     addNewEdge(state, newNodeId, childId, workflowGraph, true);
@@ -73,17 +116,8 @@ export const addNodeToWorkflow = (
     reassignEdgeSources(state, parentId, newNodeId, workflowGraph);
     addNewEdge(state, parentId, newNodeId, workflowGraph, shouldAddRunAfters);
   }
-
-  applyIsRootNode(state, workflowGraph, nodesMetadata);
-
-  // Increase action count of graph
-  if (nodesMetadata[workflowGraph.id]) {
-    nodesMetadata[workflowGraph.id].actionCount = nodesMetadata[graphId].actionCount ?? 0 + 1;
-  }
-
-  // If the added node is a do-until, we need to set the subgraphtype for the header
-  if (operation.type.toLowerCase() === 'until') nodesMetadata[newNodeId].subgraphType = SUBGRAPH_TYPES.UNTIL_DO;
-};
+  console.log('done creating edges')
+}
 
 export const addChildNode = (graph: WorkflowNode, node: WorkflowNode): void => {
   graph.children = [...(graph?.children ?? []), node];

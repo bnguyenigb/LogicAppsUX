@@ -42,7 +42,7 @@ export const createWorkflowIdCopy = (id: string) => {
   if (containsIdTag(id)) {
     const splitId = splitIdTag(id);
     const removedIdTag = splitId[0];
-    splitId[0] = createIdCopy(removedIdTag);
+    splitId[0] = createWorkflowIdCopy(removedIdTag);
     return splitId.join('-#');
   } else if (isWorkflowSubgraph(id)) {
     return `${removeWorkflowSubgraphSuffix(id)}-copy${getSuffix(id)}`;

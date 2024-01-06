@@ -2,8 +2,8 @@ import constants from '../../../common/constants';
 import { updateNodeConnection } from '../../actions/bjsworkflow/connections';
 import type { ScopeCopyInformation } from '../../actions/bjsworkflow/copypaste';
 import { initializeGraphState } from '../../parsers/ParseReduxAction';
-import type { AddNodePayload } from '../../parsers/addNodeToWorkflow';
-import { addSwitchCaseToWorkflow, addNodeToWorkflow } from '../../parsers/addNodeToWorkflow';
+import type { AddNodePayload} from '../../parsers/addNodeToWorkflow';
+import { addWorkflowNodeToWorkflow , addSwitchCaseToWorkflow, addNodeToWorkflow } from '../../parsers/addNodeToWorkflow';
 import type { DeleteNodePayload } from '../../parsers/deleteNodeFromWorkflow';
 import { deleteWorkflowNode, deleteNodeFromWorkflow } from '../../parsers/deleteNodeFromWorkflow';
 import type { WorkflowNode } from '../../parsers/models/workflowNode';
@@ -21,7 +21,7 @@ import {
   updateStaticResults,
 } from '../operation/operationMetadataSlice';
 import type { RelationshipIds } from '../panel/panelInterfaces';
-import type { SpecTypes, WorkflowState } from './workflowInterfaces';
+import type { NodesMetadata, SpecTypes, WorkflowState } from './workflowInterfaces';
 import { WorkflowKind } from './workflowInterfaces';
 import { getWorkflowNodeFromGraphState } from './workflowSelectors';
 import { LogEntryLevel, LoggerService } from '@microsoft/designer-client-services-logic-apps';
@@ -31,8 +31,6 @@ import { equals, RUN_AFTER_STATUS, WORKFLOW_EDGE_TYPES, WORKFLOW_NODE_TYPES } fr
 import { createSlice, isAnyOf } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import type { NodeChange, NodeDimensionChange } from 'reactflow';
-
-// import { createSubgraphFromPaste } from '../../parsers/pasteScopeNodeToWorkflow';
 
 export interface AddImplicitForeachPayload {
   nodeId: string;
@@ -155,13 +153,16 @@ export const workflowSlice = createSlice({
         nodeId: string;
         relationshipIds: RelationshipIds;
         nodeMapping: Map<string, ScopeCopyInformation>;
-        workflowGraph: WorkflowNode | undefined;
+        workflowGraph: WorkflowNode;
+        nodesMetadata: NodesMetadata,
+        operations: Record<string, LogicAppsV2.OperationDefinition>
       }>
     ) => {
+      const { nodeId, relationshipIds, nodeMapping, workflowGraph, nodesMetadata, operations } = action.payload;
       const graph = getWorkflowNodeFromGraphState(state, action.payload.relationshipIds.graphId);
       if (!graph) throw new Error('graph not set');
-      console.log(action.payload.workflowGraph);
-      // createSubgraphFromPaste(action.payload, state);
+      
+      addWorkflowNodeToWorkflow(relationshipIds, graph, nodeId, workflowGraph, nodesMetadata, operations, state)
     },
     moveNode: (state: WorkflowState, action: PayloadAction<MoveNodePayload>) => {
       if (!state.graph) {

@@ -64,6 +64,7 @@ export const DropZone: React.FC<DropZoneProps> = ({ graphId, parentId, childId, 
     const relationshipIds = { graphId, childId, parentId };
     if (copiedNode) {
       if (copiedNode.isScopeNode) {
+        console.log(copiedNode);
         dispatch(
           pasteScopeOperation({
             relationshipIds,
@@ -71,6 +72,8 @@ export const DropZone: React.FC<DropZoneProps> = ({ graphId, parentId, childId, 
             // converts the stringified array of tuples back into a map
             nodeDataMapping: new Map(JSON.parse(copiedNode.nodeDataMapping)),
             workflowGraph: copiedNode.workflowGraph,
+            nodesMetadata: copiedNode.nodesMetadata,
+            operations: copiedNode.operations
           })
         );
       } else {

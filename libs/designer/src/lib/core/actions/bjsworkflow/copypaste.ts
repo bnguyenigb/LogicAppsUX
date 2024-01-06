@@ -23,6 +23,8 @@ import {
 } from '@microsoft/utils-logic-apps';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { batch } from 'react-redux';
+import type { NodesMetadata, WorkflowState } from '../../state/workflow/workflowInterfaces';
+import constants from '../../../common/constants';
 
 type CopyOperationPayload = {
   nodeId: string;
@@ -73,15 +75,24 @@ export const copyScopeOperation = createAsyncThunk('copyScopeOperation', async (
     const stringifiedNodeDataMapping = JSON.stringify(Array.from(nodeDataMapping.entries()));
 
     let workflowGraph = getWorkflowNodeFromGraphState(state.workflow, scopeNodeId);
+    const workflowNodesMetadata: NodesMetadata = {};
+    const workflowOperations: Record<string, LogicAppsV2.OperationDefinition> = {};
+
     // convert workflowGraph (and children's) nodes and edges into copies
     if (workflowGraph) {
-      workflowGraph = copyWorkflowGraph(workflowGraph, idReplacements);
-      console.log(idReplacements);
+      workflowGraph = copyWorkflowGraph(state.workflow, workflowGraph, idReplacements, workflowNodesMetadata, workflowOperations);
     }
 
     window.localStorage.setItem(
       'msla-clipboard',
-      JSON.stringify({ nodeId: newNodeId, nodeDataMapping: stringifiedNodeDataMapping, isScopeNode: true, workflowGraph })
+      JSON.stringify({
+        isScopeNode: true,
+        nodeId: newNodeId,
+        nodeDataMapping: stringifiedNodeDataMapping,
+        workflowGraph,
+        nodesMetadata: workflowNodesMetadata,
+        operations: workflowOperations
+      })
     );
   });
 });
@@ -131,11 +142,13 @@ interface PasteScopeOperationPayload {
   nodeId: string;
   nodeDataMapping: Map<string, ScopeCopyInformation>;
   workflowGraph: WorkflowNode | undefined;
+  nodesMetadata: NodesMetadata,
+  operations: Record<string, LogicAppsV2.OperationDefinition>
 }
 
 export const pasteScopeOperation = createAsyncThunk('pasteScopeOperation', async (payload: PasteScopeOperationPayload, { dispatch }) => {
-  const { nodeId, relationshipIds, nodeDataMapping, workflowGraph } = payload;
-  if (!nodeId || !relationshipIds || !nodeDataMapping) throw new Error('Operation does not exist'); // Just an optional catch, should never happen
+  const { nodeId, relationshipIds, nodeDataMapping, workflowGraph, nodesMetadata, operations } = payload;
+  if (!nodeId || !relationshipIds || !nodeDataMapping || !workflowGraph) throw new Error('Operation does not exist'); // Just an optional catch, should never happen
 
   dispatch(
     pasteScopeNode({
@@ -143,6 +156,8 @@ export const pasteScopeOperation = createAsyncThunk('pasteScopeOperation', async
       relationshipIds,
       nodeMapping: nodeDataMapping,
       workflowGraph: workflowGraph,
+      nodesMetadata: nodesMetadata,
+      operations: operations
     })
   );
 });
@@ -176,15 +191,15 @@ const flattenScopeNode = (
   const { type } = serializedOperation;
   let actions: LogicAppsV2.Actions | undefined;
 
-  switch (type) {
-    case 'If':
+  switch (type.toLowerCase()) {
+    case constants.NODE.TYPE.IF:
       actions = {
         ...(serializedOperation as LogicAppsV2.IfAction).actions,
         ...(serializedOperation as LogicAppsV2.IfAction).else?.actions,
       };
       iterateThroughActions(actions, state, dataMapping, idReplacements);
       break;
-    case 'Switch':
+    case constants.NODE.TYPE.SWITCH:
       // eslint-disable-next-line no-case-declarations
       const cases = (serializedOperation as LogicAppsV2.SwitchAction).cases ?? {};
       Object.entries(cases).forEach(([key, value]) => {
@@ -195,9 +210,9 @@ const flattenScopeNode = (
       };
       iterateThroughActions(actions, state, dataMapping, idReplacements);
       break;
-    case 'Until':
-    case 'Foreach':
-    case 'Scope':
+    case constants.NODE.TYPE.UNTIL:
+    case constants.NODE.TYPE.FOREACH:
+    case constants.NODE.TYPE.SCOPE:
       actions = (serializedOperation as LogicAppsV2.ScopeAction).actions;
       iterateThroughActions(actions, state, dataMapping, idReplacements);
       break;
@@ -249,20 +264,59 @@ const iterateThroughActions = (
   return [];
 };
 
-const copyWorkflowGraph = (workflowNode: WorkflowNode, idReplacements: Record<string, string>): WorkflowNode => {
+const copyWorkflowGraph = (
+  state: WorkflowState,
+  workflowNode: WorkflowNode,
+  idReplacements: Record<string, string>,
+  nodesMetadata: NodesMetadata,
+  operations: Record<string, LogicAppsV2.OperationDefinition>
+): WorkflowNode => {
   const newWorkflowNode: WorkflowNode = createCopy(workflowNode);
-  newWorkflowNode.id = createWorkflowIdCopy(getIdReplacement(newWorkflowNode.id, idReplacements));
+  newWorkflowNode.id = createWorkflowIdCopyWithReplacement(newWorkflowNode.id, idReplacements);
+
+  if (state.nodesMetadata[workflowNode.id]) {
+    // eslint-disable-next-line no-param-reassign
+    nodesMetadata[newWorkflowNode.id] = {
+      ...state.nodesMetadata[workflowNode.id],
+      graphId: createWorkflowIdCopyWithReplacement(state.nodesMetadata[workflowNode.id].graphId, idReplacements),
+      parentNodeId: createWorkflowIdCopyWithReplacement(state.nodesMetadata[workflowNode.id].graphId, idReplacements),
+    }
+  }
+
+  if (state.operations[workflowNode.id]) {
+    // eslint-disable-next-line no-param-reassign
+    operations[newWorkflowNode.id] = state.operations[workflowNode.id];
+    // operations[newWorkflowNode.id] = handleGetOperationCopy(workflowNode.id, state.operations[workflowNode.id], idReplacements);
+  }
+
   newWorkflowNode.edges = newWorkflowNode.edges?.map((edge: WorkflowEdge) => {
-    const newSource = createWorkflowIdCopy(getIdReplacement(edge.source, idReplacements));
-    const newTarget = createWorkflowIdCopy(getIdReplacement(edge.target, idReplacements));
+    const newSource = createWorkflowIdCopyWithReplacement(edge.source, idReplacements);
+    const newTarget = createWorkflowIdCopyWithReplacement(edge.target, idReplacements);
     return { ...edge, source: newSource, target: newTarget, id: `${newSource}-${newTarget}` };
   });
   newWorkflowNode.children = newWorkflowNode.children?.map((child: WorkflowNode) => {
-    return copyWorkflowGraph(child, idReplacements);
+    return copyWorkflowGraph(state, child, idReplacements, nodesMetadata, operations);
   });
 
   return newWorkflowNode;
 };
+
+// const handleGetOperationCopy = (
+//   nodeId: string,
+//   operation: LogicAppsV2.OperationDefinition,
+//   idReplacements: Record<string, string>
+// ): LogicAppsV2.OperationDefinition => {
+//   const newOperation: LogicAppsV2.OperationDefinition = createCopy(operation);
+//   if(newOperation.type.toLowerCase() === constants.NODE.TYPE.SWITCH){
+    
+//   }
+//   return operation;
+
+// }
+
+const createWorkflowIdCopyWithReplacement = (id: string, idReplacements: Record<string, string>): string => {
+  return createWorkflowIdCopy(getIdReplacement(id, idReplacements))
+}
 
 // workflowNodes may come in the id form of Switch-addCase, this is to make sure we get the right id from idReplacements
 const getIdReplacement = (id: string, idReplacements: Record<string, string>): string => {
@@ -271,7 +325,7 @@ const getIdReplacement = (id: string, idReplacements: Record<string, string>): s
 
   if (isWorkflowSubgraph(removedIdTag)) {
     const removedWorkflowSubgraph = removeWorkflowSubgraphSuffix(removedIdTag);
-    splitId[0] = `${idReplacements[removedWorkflowSubgraph] ?? removedWorkflowSubgraph}${getSuffix(id)}`;
+    splitId[0] = `${idReplacements[removedWorkflowSubgraph] ?? removedWorkflowSubgraph}${getSuffix(removedIdTag)}`;
   } else {
     splitId[0] = idReplacements[removedIdTag] ?? removedIdTag;
   }

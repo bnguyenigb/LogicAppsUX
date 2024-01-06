@@ -126,6 +126,7 @@ export const applyIsRootNode = (state: WorkflowState, graph: WorkflowNode, metad
       return !containsIdTag(edge.source) ? acc?.filter((id) => id !== edge.target) : acc;
     }, graph.children?.filter((node) => isWorkflowOperationNode(node))?.map((node) => node.id) ?? []) ?? [];
 
+    console.log(graph.children);
   (graph.children ?? []).forEach((node) => {
     const isRoot = node.id === constants.NODE.TYPE.PLACEHOLDER_TRIGGER ? true : rootNodeIds?.includes(node.id) ?? false;
     if (metadata[node.id]) metadata[node.id].isRoot = isRoot;
