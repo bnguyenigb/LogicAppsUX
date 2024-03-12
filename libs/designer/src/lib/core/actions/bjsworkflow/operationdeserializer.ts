@@ -55,7 +55,7 @@ import {
   LoggerService,
   OperationManifestService,
   StaticResultService,
-} from '@microsoft/designer-client-services-logic-apps';
+} from '@microsoft/logic-apps-shared';
 import {
   getIntl,
   ManifestParser,
