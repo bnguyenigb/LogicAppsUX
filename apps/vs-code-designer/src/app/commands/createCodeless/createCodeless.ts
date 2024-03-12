@@ -5,12 +5,13 @@
 import { projectTemplateKeySetting } from '../../../constants';
 import { getProjFiles } from '../../utils/dotnet/dotnet';
 import { addLocalFuncTelemetry, checkSupportedFuncVersion } from '../../utils/funcCoreTools/funcVersion';
+import { isString } from '../../utils/sharedUtils';
 import { verifyAndPromptToCreateProject } from '../../utils/verifyIsProject';
 import { getWorkspaceSetting } from '../../utils/vsCodeConfig/settings';
 import { verifyInitForVSCode } from '../../utils/vsCodeConfig/verifyInitForVSCode';
 import { getContainingWorkspace, getWorkspaceFolder } from '../../utils/workspace';
 import { WorkflowStateTypeStep } from './createCodelessSteps/WorkflowStateTypeStep';
-import { isString } from '@microsoft/logic-apps-shared';
+
 import type { IActionContext } from '@microsoft/vscode-azext-utils';
 import { AzureWizard } from '@microsoft/vscode-azext-utils';
 import type { IFunctionWizardContext, FuncVersion } from '@microsoft/vscode-extension';

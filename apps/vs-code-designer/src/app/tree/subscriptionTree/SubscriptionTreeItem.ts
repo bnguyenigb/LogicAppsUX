@@ -20,7 +20,7 @@ import { getFunctionsWorkerRuntime, getWorkspaceSettingFromAnyFolder } from '../
 import { LogicAppResourceTree } from '../LogicAppResourceTree';
 import { SlotTreeItem } from '../slotsTree/SlotTreeItem';
 import type { Site, WebSiteManagementClient } from '@azure/arm-appservice';
-import { isNullOrUndefined } from '@microsoft/logic-apps-shared';
+import { isNullOrUndefined } from '../../utils/sharedUtils';
 import {
   AppInsightsCreateStep,
   AppInsightsListStep,

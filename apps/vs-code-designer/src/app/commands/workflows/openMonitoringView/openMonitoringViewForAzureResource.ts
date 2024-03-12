@@ -18,7 +18,7 @@ import { sendAzureRequest } from '../../../utils/requestUtils';
 import type { IAzureConnectorsContext } from '../azureConnectorWizard';
 import { OpenMonitoringViewBase } from './openMonitoringViewBase';
 import type { ServiceClientCredentials } from '@azure/ms-rest-js';
-import { HTTP_METHODS } from '@microsoft/logic-apps-shared';
+import { HTTP_METHODS } from '../utils/sharedUtils';
 import type { IActionContext } from '@microsoft/vscode-azext-utils';
 import type { IDesignerPanelMetadata, IWorkflowFileContent } from '@microsoft/vscode-extension';
 import { ExtensionCommand, ProjectName } from '@microsoft/vscode-extension';

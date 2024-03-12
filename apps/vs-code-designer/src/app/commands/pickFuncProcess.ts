@@ -11,13 +11,14 @@ import { getProjFiles } from '../utils/dotnet/dotnet';
 import { getFuncPortFromTaskOrProject, isFuncHostTask, runningFuncTaskMap } from '../utils/funcCoreTools/funcHostTask';
 import type { IRunningFuncTask } from '../utils/funcCoreTools/funcHostTask';
 import { isTimeoutError } from '../utils/requestUtils';
+import { HTTP_METHODS } from '../utils/sharedUtils';
 import { executeIfNotActive } from '../utils/taskUtils';
 import { runWithDurationTelemetry } from '../utils/telemetry';
 import { getWorkspaceSetting } from '../utils/vsCodeConfig/settings';
 import { getWindowsProcess } from '../utils/windowsProcess';
 import type { HttpOperationResponse } from '@azure/ms-rest-js';
 import { delay } from '@azure/ms-rest-js';
-import { HTTP_METHODS } from '@microsoft/logic-apps-shared';
+
 import type { AzExtRequestPrepareOptions } from '@microsoft/vscode-azext-azureutils';
 import { sendRequestWithTimeout } from '@microsoft/vscode-azext-azureutils';
 import { UserCancelledError, callWithTelemetryAndErrorHandling } from '@microsoft/vscode-azext-utils';
