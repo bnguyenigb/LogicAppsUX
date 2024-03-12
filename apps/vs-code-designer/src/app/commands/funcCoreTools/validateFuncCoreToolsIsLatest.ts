@@ -18,11 +18,11 @@ import { getBrewPackageName } from '../../utils/funcCoreTools/getBrewPackageName
 import { getFuncPackageManagers } from '../../utils/funcCoreTools/getFuncPackageManagers';
 import { getNpmDistTag } from '../../utils/funcCoreTools/getNpmDistTag';
 import { sendRequestWithExtTimeout } from '../../utils/requestUtils';
+import { HTTP_METHODS } from '../../utils/sharedUtils';
 import { getWorkspaceSetting, updateGlobalSetting } from '../../utils/vsCodeConfig/settings';
 import { installFuncCoreToolsBinaries } from './installFuncCoreTools';
 import { uninstallFuncCoreTools } from './uninstallFuncCoreTools';
 import { updateFuncCoreTools } from './updateFuncCoreTools';
-import { HTTP_METHODS } from '../utils/sharedUtils';
 import { callWithTelemetryAndErrorHandling, DialogResponses, openUrl, parseError } from '@microsoft/vscode-azext-utils';
 import type { IActionContext } from '@microsoft/vscode-azext-utils';
 import type { FuncVersion } from '@microsoft/vscode-extension';

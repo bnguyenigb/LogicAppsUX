@@ -5,10 +5,10 @@
 import { timeoutKey } from '../../constants';
 import { ext } from '../../extensionVariables';
 import { localize } from '../../localize';
+import { HTTP_METHODS, isString } from './sharedUtils';
 import { getWorkspaceSetting } from './vsCodeConfig/settings';
 import { RestError, WebResource } from '@azure/ms-rest-js';
 import type { HttpOperationResponse, RequestPrepareOptions, ServiceClient } from '@azure/ms-rest-js';
-import { HTTP_METHODS, isString } from '@microsoft/logic-apps-shared';
 import { createGenericClient, sendRequestWithTimeout } from '@microsoft/vscode-azext-azureutils';
 import type { AzExtRequestPrepareOptions } from '@microsoft/vscode-azext-azureutils';
 import { nonNullProp, nonNullValue, parseError } from '@microsoft/vscode-azext-utils';

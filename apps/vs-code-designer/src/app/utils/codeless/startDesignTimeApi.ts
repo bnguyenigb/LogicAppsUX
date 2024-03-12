@@ -23,6 +23,7 @@ import { type settingsFileContent } from '../../commands/dataMapper/extensionCon
 import { updateFuncIgnore } from '../codeless/common';
 import { writeFormattedJson } from '../fs';
 import { getFunctionsCommand } from '../funcCoreTools/funcVersion';
+import { extend } from '../sharedUtils';
 import { tryGetLogicAppProjectRoot } from '../verifyIsProject';
 import { getWorkspaceSetting, updateGlobalSetting } from '../vsCodeConfig/settings';
 import { getWorkspaceFolder } from '../workspace';

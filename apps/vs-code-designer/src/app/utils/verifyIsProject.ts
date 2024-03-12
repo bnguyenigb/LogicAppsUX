@@ -5,8 +5,8 @@
 import { extensionBundleId, hostFileName, localSettingsFileName } from '../../constants';
 import { localize } from '../../localize';
 import { createNewProjectInternal } from '../commands/createNewProject/createNewProject';
+import { isString } from './sharedUtils';
 import { getWorkspaceSetting, updateWorkspaceSetting } from './vsCodeConfig/settings';
-import { isString } from '../../utils/utils';
 import { DialogResponses } from '@microsoft/vscode-azext-utils';
 import type { IActionContext, IAzureQuickPickItem } from '@microsoft/vscode-azext-utils';
 import type { ICreateFunctionOptions } from '@microsoft/vscode-extension';

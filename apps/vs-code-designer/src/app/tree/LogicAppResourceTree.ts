@@ -8,6 +8,7 @@ import { parseHostJson } from '../funcConfig/host';
 import { getLocalSettingsJson } from '../utils/appSettings/localSettings';
 import { getFileOrFolderContent } from '../utils/codeless/apiUtils';
 import { tryParseFuncVersion } from '../utils/funcCoreTools/funcVersion';
+import { isString } from '../utils/sharedUtils';
 import { getIconPath } from '../utils/tree/assets';
 import { matchesAnyPart } from '../utils/tree/projectContextValues';
 import { ConfigurationsTreeItem } from './configurationsTree/ConfigurationsTreeItem';
@@ -16,7 +17,6 @@ import type { SlotTreeItem } from './slotsTree/SlotTreeItem';
 import { SlotsTreeItem } from './slotsTree/SlotsTreeItem';
 import { ArtifactsTreeItem } from './slotsTree/artifactsTree/ArtifactsTreeItem';
 import type { Site, SiteConfig, SiteSourceControl, StringDictionary } from '@azure/arm-appservice';
-import { isString } from '../../utils/utils';
 import {
   DeleteLastServicePlanStep,
   DeleteSiteStep,

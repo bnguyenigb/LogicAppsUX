@@ -66,6 +66,23 @@ export function isObject(value: any): boolean {
   return Object.prototype.toString.call(value) === '[object Object]';
 }
 
+export function equals(x: string | null | undefined, y: string | null | undefined, caseInsensitive = true) {
+  if (caseInsensitive) {
+    // NOTE: In some cases, the conversion of Latin or Greek characters to uppercase and then back to lowercase will result
+    // in a different evaluation, which means checking only 'toLowerCase' equivalence is insufficient. This should also return 'true'
+    // in the event that they share 'toUpperCase' equivalence. See work item One/#15505347 and incident 333040852 for details.
+    return !isNullOrUndefined(x) && !isNullOrUndefined(y) && (x.toLowerCase() === y.toLowerCase() || x.toUpperCase() === y.toUpperCase());
+  } else {
+    return !isNullOrUndefined(x) && !isNullOrUndefined(y) && x === y;
+  }
+}
+
+export const Theme = {
+  Dark: 'dark',
+  Light: 'light',
+};
+export type Theme = (typeof Theme)[keyof typeof Theme];
+
 export function extend(target: any, ...sources: any[]): any {
   return copy({ copyNonEnumerableProps: false }, target, ...sources);
 }

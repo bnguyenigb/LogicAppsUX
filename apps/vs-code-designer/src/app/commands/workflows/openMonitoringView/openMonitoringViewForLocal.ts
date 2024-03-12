@@ -16,8 +16,8 @@ import {
 } from '../../../utils/codeless/common';
 import { getConnectionsFromFile, getLogicAppProjectRoot, getParametersFromFile } from '../../../utils/codeless/connection';
 import { sendRequest } from '../../../utils/requestUtils';
+import { HTTP_METHODS } from '../../../utils/sharedUtils';
 import { OpenMonitoringViewBase } from './openMonitoringViewBase';
-import { HTTP_METHODS } from '../utils/sharedUtils';
 import type { IActionContext } from '@microsoft/vscode-azext-utils';
 import type { AzureConnectorDetails, IDesignerPanelMetadata, Parameter } from '@microsoft/vscode-extension';
 import { ExtensionCommand, ProjectName } from '@microsoft/vscode-extension';

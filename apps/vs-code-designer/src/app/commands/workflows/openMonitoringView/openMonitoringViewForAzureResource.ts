@@ -15,10 +15,10 @@ import {
 } from '../../../utils/codeless/common';
 import { getAuthorizationToken } from '../../../utils/codeless/getAuthorizationToken';
 import { sendAzureRequest } from '../../../utils/requestUtils';
+import { HTTP_METHODS } from '../../../utils/sharedUtils';
 import type { IAzureConnectorsContext } from '../azureConnectorWizard';
 import { OpenMonitoringViewBase } from './openMonitoringViewBase';
 import type { ServiceClientCredentials } from '@azure/ms-rest-js';
-import { HTTP_METHODS } from '../utils/sharedUtils';
 import type { IActionContext } from '@microsoft/vscode-azext-utils';
 import type { IDesignerPanelMetadata, IWorkflowFileContent } from '@microsoft/vscode-extension';
 import { ExtensionCommand, ProjectName } from '@microsoft/vscode-extension';

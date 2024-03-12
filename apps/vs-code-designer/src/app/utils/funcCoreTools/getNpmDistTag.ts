@@ -5,8 +5,8 @@
 import { localize } from '../../../localize';
 import { parseJson } from '../parseJson';
 import { sendRequestWithExtTimeout } from '../requestUtils';
+import { HTTP_METHODS } from '../sharedUtils';
 import { tryGetMajorVersion } from './funcVersion';
-import { HTTP_METHODS } from '../utils/sharedUtils';
 import type { IActionContext } from '@microsoft/vscode-azext-utils';
 import type { FuncVersion, INpmDistTag, IPackageMetadata } from '@microsoft/vscode-extension';
 import * as semver from 'semver';

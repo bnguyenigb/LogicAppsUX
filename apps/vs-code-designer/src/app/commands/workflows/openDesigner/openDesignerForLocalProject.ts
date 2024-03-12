@@ -22,8 +22,8 @@ import {
 import { saveParameters } from '../../../utils/codeless/parameter';
 import { startDesignTimeApi } from '../../../utils/codeless/startDesignTimeApi';
 import { sendRequest } from '../../../utils/requestUtils';
+import { HTTP_METHODS } from '../../../utils/sharedUtils';
 import { OpenDesignerBase } from './openDesignerBase';
-import { HTTP_METHODS } from '../utils/sharedUtils';
 import type { IActionContext } from '@microsoft/vscode-azext-utils';
 import type { AzureConnectorDetails, FileSystemConnectionInfo, IDesignerPanelMetadata, Parameter } from '@microsoft/vscode-extension';
 import { ExtensionCommand, ProjectName } from '@microsoft/vscode-extension';
