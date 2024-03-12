@@ -12,7 +12,6 @@ module.exports = {
     alias: {
       '@microsoft/logic-apps-shared': createLibPath('logic-apps-shared/index.js'),
       '@microsoft/logic-apps-designer': createLibPath('designer/index.js'),
-      '@microsoft/logic-apps-shared': createLibPath('services/designer-client-services/index.js'),
       '@microsoft/designer-ui': createLibPath('designer-ui/index.js'),
       '@microsoft/chatbot': createLibPath('chatbot/index.js'),
       https: false,
