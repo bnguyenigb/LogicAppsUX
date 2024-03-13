@@ -1,6 +1,8 @@
 import { changeFetchedFunctions, changeSourceSchema, changeTargetSchema, changeUseExpandedFunctionCards } from '../../state/DataMapSlice';
 import type { AppDispatch, RootState } from '../../state/store';
 import { VSCodeContext } from '../../webviewCommunication';
+import type { Theme } from '../utils';
+import type { SchemaType } from './utils';
 import {
   getFileNameAndPath,
   DataMapDataProvider,
@@ -12,7 +14,6 @@ import {
   getSelectedSchema,
 } from '@microsoft/logic-apps-data-mapper';
 import { getTheme, useThemeObserver } from '@microsoft/logic-apps-designer';
-import type { Theme, SchemaType } from '@microsoft/logic-apps-shared';
 import type { MessageToVsix } from '@microsoft/vscode-extension';
 import { ExtensionCommand } from '@microsoft/vscode-extension';
 import { useCallback, useContext, useEffect, useState } from 'react';

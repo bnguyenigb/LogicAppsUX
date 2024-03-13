@@ -1,3 +1,4 @@
+import { HTTP_METHODS } from '../../app/utils';
 import { ResourceType } from '../types';
 import type {
   IApiService,
@@ -10,7 +11,6 @@ import type {
   IIse,
 } from '../types';
 import { getValidationPayload, getExportUri } from './helper';
-import { HTTP_METHODS } from '@microsoft/logic-apps-shared';
 import { getBaseGraphApi } from '@microsoft/vscode-extension';
 
 export interface ApiServiceOptions {

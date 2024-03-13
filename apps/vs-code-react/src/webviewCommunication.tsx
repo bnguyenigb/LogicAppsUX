@@ -1,3 +1,4 @@
+import { SchemaType } from './app/dataMapper/utils';
 import {
   type UpdateAccessTokenMessage,
   type UpdateExportPathMessage,
@@ -32,7 +33,6 @@ import type { InitializePayload } from './state/WorkflowSlice';
 import { initializeWorkflow, updateAccessToken, updateTargetDirectory, addStatus, setFinalStatus } from './state/WorkflowSlice';
 import { initialize } from './state/projectSlice';
 import type { AppDispatch, RootState } from './state/store';
-import { SchemaType } from '@microsoft/logic-apps-shared';
 import { ExtensionCommand, ProjectName } from '@microsoft/vscode-extension';
 import useEventListener from '@use-it/event-listener';
 import type { ReactNode } from 'react';

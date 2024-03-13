@@ -1,6 +1,21 @@
 import { JwtTokenConstants, JwtTokenHelper } from './JwtHelper';
-import type { IOAuthPopup, IOAuthService, OAuthPopupOptions } from '@microsoft/logic-apps-shared';
 import { ExtensionCommand } from '@microsoft/vscode-extension';
+
+export interface IOAuthService {
+  openLoginPopup(options: OAuthPopupOptions): IOAuthPopup;
+
+  fetchConsentUrlForConnection: (connectionId: string) => Promise<string>;
+  confirmConsentCodeForConnection: (connectionId: string, code: string) => Promise<any>;
+}
+
+export interface IOAuthPopup {
+  [x: string]: any;
+  loginPromise: Promise<LoginResult>;
+}
+
+export interface OAuthPopupOptions {
+  consentUrl: string;
+}
 
 export interface LoginResult {
   [x: string]: any;
