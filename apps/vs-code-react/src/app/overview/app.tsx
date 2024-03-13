@@ -5,13 +5,50 @@ import { VSCodeContext } from '../../webviewCommunication';
 import './overview.less';
 import { Overview, isRunError, mapToRunItem } from '@microsoft/designer-ui';
 import { StandardRunService } from '@microsoft/logic-apps-shared';
-import type { Callback } from '@microsoft/logic-apps-shared';
-import type { Runs } from '@microsoft/logic-apps-shared';
 import { ExtensionCommand, HttpClient } from '@microsoft/vscode-extension';
 import { useCallback, useContext, useMemo } from 'react';
 import { useInfiniteQuery, useMutation } from 'react-query';
 import { useSelector } from 'react-redux';
 import invariant from 'tiny-invariant';
+
+export interface Callback {
+  method?: string;
+  value: string;
+}
+export interface Run {
+  id: string;
+  name: string;
+  properties: RunProperties;
+  kind?: string;
+  location?: string;
+  tags?: Record<string, string>;
+  type: string;
+}
+
+export interface RunError {
+  error: {
+    code: string;
+    message: string;
+  };
+}
+
+export interface RunProperties {
+  actions?: Record<string, unknown>;
+  code?: string;
+  correlation?: unknown;
+  correlationId?: string;
+  endTime?: string;
+  error?: RunError;
+  outputs: Record<string, unknown>;
+  startTime: string;
+  status: string;
+  trigger: unknown;
+  workflow: unknown;
+}
+export interface Runs {
+  nextLink?: string;
+  runs: Run[];
+}
 
 export const OverviewApp = () => {
   const workflowState = useSelector((state: RootState) => state.workflow);
