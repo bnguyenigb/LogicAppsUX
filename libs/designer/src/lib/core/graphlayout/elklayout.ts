@@ -9,13 +9,15 @@ import {
   useThrottledEffect,
   WORKFLOW_NODE_TYPES,
   WORKFLOW_EDGE_TYPES,
+  isDeveloperMode,
 } from '@microsoft/logic-apps-shared';
 import type { ElkExtendedEdge, ElkNode } from 'elkjs/lib/elk.bundled';
 import ELK from 'elkjs/lib/elk.bundled';
 import { useLayoutEffect } from 'react';
 import { useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useEdgesState, useNodesState, type Edge, type Node } from 'reactflow';
+import { incrementNumberOfTimesGraphCalculated, incrementTimeSpentCalculatingGraph } from '../state/dev/devSlice';
 
 export const layerSpacing = {
   default: '64',
@@ -159,22 +161,33 @@ export const useLayout = (setNodes: any, setEdges: any): number[] => {
   const [reactFlowSize, setReactFlowSize] = useState<number[]>([0, 0]);
   const workflowGraph = useSelector(getRootWorkflowGraphForLayout);
   const readOnly = useReadOnly();
-
+  const dispatch = useDispatch();
   useLayoutEffect(() => {
     if (!workflowGraph) return;
-    const elkGraph: ElkNode = convertWorkflowGraphToElkGraph(workflowGraph);
+    let timerStart: number;
+    if (isDeveloperMode()) {
+      timerStart = performance.now();
+    }
     const traceId = LoggerService().startTrace({
       action: 'useLayout',
       actionModifier: 'run Elk Layout',
       name: 'Elk Layout',
       source: 'elklayout.ts',
     });
+    const elkGraph: ElkNode = convertWorkflowGraphToElkGraph(workflowGraph);
+
     elkLayout(elkGraph, readOnly)
       .then((g) => {
         const [n, e, s] = convertElkGraphToReactFlow(g);
         setNodes(n);
         setEdges(e);
         setReactFlowSize(s);
+
+        if (isDeveloperMode()) {
+          const timeSpent = performance.now() - timerStart;
+          dispatch(incrementNumberOfTimesGraphCalculated());
+          dispatch(incrementTimeSpentCalculatingGraph(timeSpent));
+        }
         LoggerService().endTrace(traceId, { status: Status.Success });
       })
       .catch((err) => {
