@@ -34,7 +34,17 @@ import { DndProvider, createTransition, MouseTransition } from 'react-dnd-multi-
 import { useHotkeys } from 'react-hotkeys-hook';
 import { useQuery } from 'react-query';
 import { useDispatch, useSelector } from 'react-redux';
-import { Background, ReactFlow, ReactFlowProvider, useNodes, useReactFlow, useStore, BezierEdge } from 'reactflow';
+import {
+  Background,
+  ReactFlow,
+  ReactFlowProvider,
+  useNodes,
+  useReactFlow,
+  useStore,
+  BezierEdge,
+  useEdgesState,
+  useNodesState,
+} from 'reactflow';
 import type { BackgroundProps, NodeChange } from 'reactflow';
 import { PerformanceDebugTool } from './common/PerformanceDebug/PerformanceDebug';
 
@@ -136,16 +146,18 @@ export const SearchPreloader = () => {
 export const Designer = (props: DesignerProps) => {
   const { backgroundProps, panelLocation, customPanelLocations } = props;
 
-  const [nodes, edges, flowSize] = useLayout();
+  const [nodes, setNodes, onNodesChange] = useNodesState([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const flowSize = useLayout(setNodes, setEdges);
   const isEmpty = useIsGraphEmpty();
   const isReadOnly = useReadOnly();
   const dispatch = useDispatch<AppDispatch>();
-  const onNodesChange = useCallback(
-    (changes: NodeChange[]) => {
-      dispatch(updateNodeSizes(changes));
-    },
-    [dispatch]
-  );
+  // const onNodesChange = useCallback(
+  //   (changes: NodeChange[]) => {
+  //     dispatch(updateNodeSizes(changes));
+  //   },
+  //   [dispatch]
+  // );
 
   const emptyWorkflowPlaceholderNodes = [
     {
@@ -237,6 +249,7 @@ export const Designer = (props: DesignerProps) => {
             nodes={nodesWithPlaceholder}
             edges={edges}
             onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
             nodesConnectable={false}
             nodesDraggable={false}
             nodesFocusable={false}
