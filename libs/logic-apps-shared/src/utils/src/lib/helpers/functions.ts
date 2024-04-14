@@ -1097,3 +1097,8 @@ export const FindPreviousAndNextPage = (page: number, bookmarks: number[]) => {
   }
   return { nextFailedRepetition, prevFailedRepetition };
 };
+
+
+export const isDeveloperMode = () => {
+  return process.env.NODE_ENV === 'development';
+}

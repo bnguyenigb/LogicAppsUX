@@ -4,13 +4,20 @@ import { createSlice } from '@reduxjs/toolkit';
 
 const initialState: DevState = {
   reduxActionCounts: {},
+  numberOfTimesGraphCalculated: 0,
+  timeSpentCalculatingGraph: 0,
 };
 
 export const devSlice = createSlice({
   name: 'dev',
   initialState,
   reducers: {
-    // Nothing
+    incrementNumberOfTimesGraphCalculated: (state) => {
+      state.numberOfTimesGraphCalculated += 1;
+    },
+    incrementTimeSpentCalculatingGraph: (state, action) => {
+      state.timeSpentCalculatingGraph += action.payload;
+    },
   },
   extraReducers: (builder) => {
     // Reset the state on workflow reset
@@ -27,5 +34,7 @@ export const devSlice = createSlice({
     );
   },
 });
+
+export const { incrementNumberOfTimesGraphCalculated, incrementTimeSpentCalculatingGraph } = devSlice.actions;
 
 export default devSlice.reducer;

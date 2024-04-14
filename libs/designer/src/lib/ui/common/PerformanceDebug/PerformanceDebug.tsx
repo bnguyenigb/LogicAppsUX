@@ -2,6 +2,7 @@ import { Card, Divider, Text } from '@fluentui/react-components';
 import { InitializationTimer } from './Tools/InitializationTimer';
 import { useShowPerformanceDebug } from '../../../core/state/designerOptions/designerOptionsSelectors';
 import { ReduxActionCounts } from './Tools/ReduxActionCount';
+import { GraphCalculations } from './Tools/GraphCalculation';
 
 export const PerformanceDebugTool = () => {
   const showTool = useShowPerformanceDebug();
@@ -16,6 +17,8 @@ export const PerformanceDebugTool = () => {
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
         <Text weight="bold">Performance Debug Tools</Text>
         <InitializationTimer />
+        <Divider />
+        <GraphCalculations />
         <Divider />
         <ReduxActionCounts />
       </div>
